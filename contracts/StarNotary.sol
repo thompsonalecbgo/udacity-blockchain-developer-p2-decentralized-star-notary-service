@@ -6,28 +6,21 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 // StarNotary Contract declaration inheritance the ERC721 openzeppelin implementation
 contract StarNotary is ERC721 {
-
-    // contract owner
-    address payable public owner;
     
     // Star data
     struct Star {
         string name;
     }
 
-    // Implement Task 1 Add a name and symbol properties
-    // name: Is a short name to your token
-    // symbol: Is a short string like 'USD' -> 'American Dollar'
-
     // mapping the Star with the Owner Address
     mapping(uint256 => Star) public tokenIdToStarInfo;
     // mapping the TokenId and price
     mapping(uint256 => uint256) public starsForSale;
 
-    // Init token name and symbol
-    constructor() public ERC721("CryptoStarz", "STAR") {
-        owner = payable(msg.sender);
-    }
+    // Implement Task 1 Add a name and symbol properties
+    // name: Is a short name to your token
+    // symbol: Is a short string like 'USD' -> 'American Dollar'
+    constructor() public ERC721("CryptoStarz", "STAR") {}
 
     // Create Star using the Struct
     function createStar(string memory _name, uint256 _tokenId) public {
@@ -100,11 +93,5 @@ contract StarNotary is ERC721 {
 
         //2. Use the transferFrom(from, to, tokenId); function to transfer the Star
         _safeTransfer(msg.sender, _to, _tokenId, "");
-    }
-
-    // Add function to terminate contract
-    function kill() external {
-        require(msg.sender == owner, "You can't kill this contract unless you're the owner");
-        selfdestruct(owner);
     }
 }
