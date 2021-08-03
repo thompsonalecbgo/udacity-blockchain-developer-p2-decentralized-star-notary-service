@@ -6,6 +6,9 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 // StarNotary Contract declaration inheritance the ERC721 openzeppelin implementation
 contract StarNotary is ERC721 {
+
+    // contract owner
+    address payable public owner;
     
     // Star data
     struct Star {
@@ -22,7 +25,9 @@ contract StarNotary is ERC721 {
     mapping(uint256 => uint256) public starsForSale;
 
     // Init token name and symbol
-    constructor() public ERC721("StarNotary", "STN") {}
+    constructor() public ERC721("CryptoStarz", "STAR") {
+        owner = payable(msg.sender);
+    }
 
     // Create Star using the Struct
     function createStar(string memory _name, uint256 _tokenId) public {
@@ -57,20 +62,49 @@ contract StarNotary is ERC721 {
 
     // Implement Task 1 lookUptokenIdToStarInfo
     function lookUptokenIdToStarInfo (uint _tokenId) public view returns (string memory) {
+        // Stars should exist
+        require(_tokenId > 0, "You can't transfer the star that don't exist");
         //1. You should return the Star saved in tokenIdToStarInfo mapping
+        return tokenIdToStarInfo[_tokenId].name;
     }
 
     // Implement Task 1 Exchange Stars function
     function exchangeStars(uint256 _tokenId1, uint256 _tokenId2) public {
-        //1. Passing to star tokenId you will need to check if the owner of _tokenId1 or _tokenId2 is the sender
-        //2. You don't have to check for the price of the token (star)
         //3. Get the owner of the two tokens (ownerOf(_tokenId1), ownerOf(_tokenId1)
+        address star1Owner = ownerOf(_tokenId1);
+        address star2Owner = ownerOf(_tokenId2);
+
+        // Stars should exist
+        require((_tokenId1 > 0) && (_tokenId2 > 0), "You can't exchange stars that don't exist");
+
+        //1. Passing to star tokenId you will need to check if the owner of _tokenId1 or _tokenId2 is the sender
+        require((star1Owner == msg.sender) || (star2Owner == msg.sender), "You can't exchange stars you don't owned");
+
+        //2. You don't have to check for the price of the token (star)
+        
         //4. Use _transferFrom function to exchange the tokens.
+        _safeTransfer(star1Owner, star2Owner, _tokenId1, "");
+        _safeTransfer(star2Owner, star1Owner, _tokenId2, "");
     }
 
     // Implement Task 1 Transfer Stars
-    function transferStar(address _to1, uint256 _tokenId) public {
+    function transferStar(address _to, uint256 _tokenId) public {
+        // To address should exist
+        require(_to != address(0), "You can't transfer the star to address that don't exist");
+
+        // Stars should exist
+        require(_tokenId > 0, "You can't transfer the star that don't exist");
+
         //1. Check if the sender is the ownerOf(_tokenId)
+        require(ownerOf(_tokenId) == msg.sender, "You can't transfer the star you don't owned");
+
         //2. Use the transferFrom(from, to, tokenId); function to transfer the Star
+        _safeTransfer(msg.sender, _to, _tokenId, "");
+    }
+
+    // Add function to terminate contract
+    function kill() external {
+        require(msg.sender == owner, "You can't kill this contract unless you're the owner");
+        selfdestruct(owner);
     }
 }
